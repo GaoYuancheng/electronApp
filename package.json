@@ -1,16 +1,16 @@
 {
-  "name": "electron-quick-start",
+  "name": "electron-app",
   "version": "1.0.0",
-  "description": "A minimal Electron application",
-  "main": "main.js",
+  "main": "./main-process",
   "scripts": {
     "start": "electron .",
-    "dev": "electron . --debug"
+    "dev": "electron . --debug",
+    "lint:create": "eslint --init"
   },
-
   "author": "GitHub",
   "license": "CC0-1.0",
   "devDependencies": {
-    "electron": "^9.1.0"
+    "electron": "^9.1.0",
+    "eslint": "^7.4.0"
   }
 }

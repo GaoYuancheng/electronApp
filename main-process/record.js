@@ -1,10 +1,5 @@
-const {
-  ipcMain,
-  globalShortcut,
-  clipboard,
-  screen,
-  BrowserWindow
-} = require("electron");
+const { BrowserWindow, screen } = require("electron");
+let captureWin = null;
 
 const os = require("os");
 
@@ -21,8 +16,8 @@ const start = (e, args) => {
   captureWin = new BrowserWindow({
     // window 使用 fullscreen,  mac 设置为 undefined, 不可为 false
     fullscreen: os.platform() === "win32" || undefined, // win
-    width: 100,
-    height: 100,
+    width,
+    height,
     x: 0,
     y: 0,
     transparent: true,
@@ -32,21 +27,28 @@ const start = (e, args) => {
     movable: false,
     resizable: false,
     enableLargerThanScreen: true, // mac
-    hasShadow: false
+    hasShadow: false,
   });
   captureWin.setAlwaysOnTop(true, "screen-saver"); // mac
   captureWin.setVisibleOnAllWorkspaces(true); // mac
   captureWin.setFullScreenable(false); // mac
 
-  captureWin.loadFile("index.html");
-
-  // 调试用
-  // captureWin.openDevTools()
+  captureWin.loadFile("../asserts/screen.html");
 
   captureWin.on("closed", () => {
     captureWin = null;
   });
 };
 
-ipcMain.on("start", start);
-module.exports = start;
+// 按下esc键
+const pressEsc = () => {
+  if (captureWin) {
+    captureWin.close();
+    captureWin = null;
+  }
+};
+
+module.exports = {
+  pressEsc,
+  start,
+};
