@@ -7,7 +7,7 @@ const os = require("os");
 //   console.log(arg, screen); // prints "ping"
 // };
 
-const start = (e, args) => {
+const start = () => {
   if (captureWin) {
     return;
   }
@@ -16,8 +16,8 @@ const start = (e, args) => {
   captureWin = new BrowserWindow({
     // window 使用 fullscreen,  mac 设置为 undefined, 不可为 false
     fullscreen: os.platform() === "win32" || undefined, // win
-    width,
-    height,
+    width: 1000,
+    height: 1000,
     x: 0,
     y: 0,
     transparent: true,
@@ -28,12 +28,22 @@ const start = (e, args) => {
     resizable: false,
     enableLargerThanScreen: true, // mac
     hasShadow: false,
+    webPreferences: {
+      nodeIntegration: true
+    }
   });
   captureWin.setAlwaysOnTop(true, "screen-saver"); // mac
   captureWin.setVisibleOnAllWorkspaces(true); // mac
   captureWin.setFullScreenable(false); // mac
 
-  captureWin.loadFile("../asserts/screen.html");
+  captureWin.loadURL(
+    require("url").format({
+      pathname: require("path").join(__dirname, "../asserts/screen.html"),
+      protocol: "file:",
+      slashes: false
+    })
+  );
+  // captureWin.webContents.openDevTools();
 
   captureWin.on("closed", () => {
     captureWin = null;
@@ -50,5 +60,5 @@ const pressEsc = () => {
 
 module.exports = {
   pressEsc,
-  start,
+  start
 };

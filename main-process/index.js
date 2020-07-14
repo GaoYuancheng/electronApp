@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, screen } = require("electron");
+const { app, BrowserWindow, ipcMain } = require("electron");
 const path = require("path");
 
 let mainWindow;
@@ -9,8 +9,8 @@ function createWindow() {
     height: 600,
     webPreferences: {
       preload: path.join(__dirname, "../preload.js"),
-      nodeIntegration: true,
-    },
+      nodeIntegration: true
+    }
     // frame: false,
     // titleBarStyle: 'customButtonsOnHover'
   });
@@ -31,15 +31,17 @@ app.whenReady().then(() => {
   // 快捷键注册
   require("./keyboard");
 
-  app.on("activate", function () {
+  app.on("activate", function() {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
 });
 
-app.on("window-all-closed", function () {
+app.on("window-all-closed", function() {
   if (process.platform !== "darwin") app.quit();
 });
 
 const { start } = require("./record");
+const { saveImage } = require("./screen");
 
 ipcMain.on("start", start);
+ipcMain.on("save-image", saveImage);

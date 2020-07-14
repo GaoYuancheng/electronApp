@@ -3,8 +3,8 @@ const { globalShortcut } = require("electron");
 
 globalShortcut.register("Esc", () => {
   pressEsc();
-  console.log("sss");
+  console.log("press Esc");
 });
-globalShortcut.register("CommandOrControl+A", function () {
+globalShortcut.register("CommandOrControl+A", function() {
   console.log("sss");
 });
