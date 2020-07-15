@@ -1,13 +1,14 @@
-html, body, div {
+html,
+body,
+div {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  height:100vh;
+  height: 100vh;
 }
 
 #canvas {
   border: 1px solid red;
-display: none;
-position: absolute;
-
+  display: none;
+  position: absolute;
 }

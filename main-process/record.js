@@ -3,10 +3,6 @@ let captureWin = null;
 
 const os = require("os");
 
-// const start = (event, arg) => {
-//   console.log(arg, screen); // prints "ping"
-// };
-
 const start = () => {
   if (captureWin) {
     return;
@@ -16,8 +12,10 @@ const start = () => {
   captureWin = new BrowserWindow({
     // window 使用 fullscreen,  mac 设置为 undefined, 不可为 false
     fullscreen: os.platform() === "win32" || undefined, // win
-    width: 1000,
-    height: 1000,
+    // width: 1000,
+    // height: 1000,
+    width,
+    height,
     x: 0,
     y: 0,
     transparent: true,
@@ -40,7 +38,7 @@ const start = () => {
     require("url").format({
       pathname: require("path").join(__dirname, "../asserts/screen.html"),
       protocol: "file:",
-      slashes: false
+      slashes: true
     })
   );
   // captureWin.webContents.openDevTools();

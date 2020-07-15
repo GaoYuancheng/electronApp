@@ -9,3 +9,13 @@ div {
 #canvas {
   background: transparent;
 }
+#getCaptureImage {
+  top:100px;
+  position: absolute;
+  left:100px; 
+}
+#getDesktopCapturer{
+  top:100px;
+  position: absolute;
+  left:200px; 
+}

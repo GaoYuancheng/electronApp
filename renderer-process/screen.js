@@ -1,4 +1,4 @@
-const { ipcRenderer } = require("electron");
+const { ipcRenderer, remote } = require("electron");
 
 let canvas = document.getElementById("canvas");
 canvas.width = document.body.offsetWidth;
@@ -23,7 +23,7 @@ const onMousedown = e => {
 
 const onMouseMove = e => {
   if (moveStart) {
-    clear();
+    clear(canvas);
     const { offsetX, offsetY } = e;
     w = offsetX - x;
     h = offsetY - y;
@@ -37,15 +37,11 @@ const onMouseup = () => {
     moveStart = false;
   }
 };
-var clear = () => {
-  // console.log("ss", canvas.width, canvas.height);
-  // ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+// 清除画布
+const clear = canvas => {
   canvas.height += 1;
   canvas.height -= 1;
-  // ctx.fillStyle = "#fff";
-  // ctx.beginPath();
-  // ctx.fillRect(0, 0, canvas.width, canvas.height);
-  // ctx.closePath();
 };
 
 const drawRect = (x, y, w, h) => {
@@ -54,22 +50,93 @@ const drawRect = (x, y, w, h) => {
   ctx.strokeStyle = "#fff";
   ctx.lineWidth = 2;
   ctx.stroke();
-  x = y = 0;
+  // x = y = 0;
 };
 
-const getImageData = () => {
-  let imageData = ctx.getImageData(x, y, w, h);
+const saveImage = imageData => {
   let _canvas = document.createElement("canvas");
   _canvas.width = w;
   _canvas.height = h;
   let _ctx = _canvas.getContext("2d");
   _ctx.putImageData(imageData, 0, 0);
   const imgUrl = _canvas.toDataURL();
-  console.log(imgUrl);
+  console.log("save");
   ipcRenderer.send("save-image", imgUrl);
+};
+
+const { desktopCapturer } = require("electron");
+const getCaptureImage = () => {
+  console.log("getCaptureImage");
+  let { width, height } = remote.screen.getPrimaryDisplay().bounds;
+  desktopCapturer
+    .getSources({ types: ["window", "screen"] })
+    .then(async sources => {
+      for (const source of sources) {
+        console.log(source);
+        if (source.name === "Entire Screen") {
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+              audio: false,
+              video: {
+                mandatory: {
+                  chromeMediaSource: "desktop",
+                  chromeMediaSourceId: source.id,
+                  minWidth: 0,
+                  maxWidth: width,
+                  minHeight: 0,
+                  maxHeight: height
+                }
+              }
+            });
+            handleStream(stream);
+          } catch (e) {
+            handleError(e);
+          }
+          return;
+        }
+      }
+    });
+
+  function handleStream(stream) {
+    if (!stream) return;
+
+    const video = document.createElement("video");
+    // const video = document.getElementById("video");
+
+    video.height = document.body.offsetHeight;
+    video.width = document.body.offsetWidth;
+    // document.body.appendChild(video);
+    video.onloadedmetadata = () => {
+      stream.getTracks()[0];
+      video.play();
+      const _canvas = document.createElement("canvas");
+      _canvas.width = video.width;
+      _canvas.height = video.height;
+      const _ctx = _canvas.getContext("2d");
+      // clear(_canvas);
+      _ctx.drawImage(video, 0, 0);
+
+      const imageData = _ctx.getImageData(x, y, w, h);
+      // document.body.appendChild(_canvas);
+      saveImage(imageData);
+    };
+
+    // video.onloadedmetadata = e => video.play();
+    video.srcObject = stream;
+    // ipcRenderer.send("close");
+  }
+
+  function handleError(e) {
+    console.log(e);
+  }
 };
 
 canvas.addEventListener("mousedown", onMousedown);
 canvas.addEventListener("mouseup", onMouseup);
 canvas.addEventListener("mousemove", onMouseMove);
-document.getElementById("getImageData").addEventListener("click", getImageData);
+document
+  .getElementById("getCaptureImage")
+  .addEventListener("click", getCaptureImage);
+// document
+//   .getElementById("getDesktopCapturer")
+//   .addEventListener("click", getDesktopCapturer);
