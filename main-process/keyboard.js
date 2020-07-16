@@ -1,8 +1,8 @@
-let { pressEsc } = require("./record");
+let { closeCaptureWin } = require("./record");
 const { globalShortcut } = require("electron");
 
 globalShortcut.register("Esc", () => {
-  pressEsc();
+  closeCaptureWin();
   console.log("press Esc");
 });
 globalShortcut.register("CommandOrControl+A", function() {

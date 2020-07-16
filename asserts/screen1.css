@@ -12,3 +12,11 @@ div {
   display: none;
   position: absolute;
 }
+
+#canvas1 {
+  position: absolute;
+  top:0;
+  right: 0;
+  z-index: 9999;
+  background: #000
+}

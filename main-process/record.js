@@ -1,4 +1,5 @@
 const { BrowserWindow, screen } = require("electron");
+const { debug } = require("../utils");
 let captureWin = null;
 
 const os = require("os");
@@ -14,8 +15,8 @@ const start = () => {
     fullscreen: os.platform() === "win32" || undefined, // win
     // width: 1000,
     // height: 1000,
-    width,
-    height,
+    width: debug ? 1000 : width,
+    height: debug ? 1000 : height,
     x: 0,
     y: 0,
     transparent: true,
@@ -41,7 +42,9 @@ const start = () => {
       slashes: true
     })
   );
-  // captureWin.webContents.openDevTools();
+  if (debug) {
+    captureWin.webContents.openDevTools();
+  }
 
   captureWin.on("closed", () => {
     captureWin = null;
@@ -49,7 +52,7 @@ const start = () => {
 };
 
 // 按下esc键
-const pressEsc = () => {
+const closeCaptureWin = () => {
   if (captureWin) {
     captureWin.close();
     captureWin = null;
@@ -57,6 +60,6 @@ const pressEsc = () => {
 };
 
 module.exports = {
-  pressEsc,
+  closeCaptureWin,
   start
 };

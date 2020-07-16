@@ -4,18 +4,32 @@ div {
   margin: 0;
   padding: 0;
   height: 100vh;
+  /* background: #000; */
+  overflow: hidden;
 }
 
 #canvas {
   background: transparent;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 20;
 }
 #getCaptureImage {
-  top:100px;
+  top: 100px;
   position: absolute;
-  left:100px; 
+  left: 100px;
+  z-index: 30;
 }
-#getDesktopCapturer{
-  top:100px;
+/* #getDesktopCapturer {
+  top: 100px;
   position: absolute;
-  left:200px; 
+  left: 200px;
+} */
+
+#bgImg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10
 }

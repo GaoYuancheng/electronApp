@@ -1,8 +1,23 @@
 const { ipcRenderer, remote } = require("electron");
 
 let canvas = document.getElementById("canvas");
-canvas.width = document.body.offsetWidth;
-canvas.height = document.body.offsetHeight;
+let bgImg = document.getElementById("bgImg");
+
+let screenWidth = document.body.offsetWidth;
+let screenHeight = document.body.offsetHeight;
+
+// bgImg.style.width = screenWidth;
+// bgImg.style.height = screenHeight;
+
+let screenImgUrl = "";
+let screenImgData = "";
+
+// const ratio = window.devicePixelRatio || 2;
+// 处理canvas 导出的图片模糊问题 TODO: 不是很懂
+const ratio = 1;
+
+canvas.width = screenWidth;
+canvas.height = screenHeight;
 let ctx = canvas.getContext("2d");
 let mouseHasDownInCanvas = false;
 let x,
@@ -47,32 +62,40 @@ const clear = canvas => {
 const drawRect = (x, y, w, h) => {
   // console.log(x, y, w, h);
   ctx.rect(x, y, w, h);
-  ctx.strokeStyle = "#fff";
+  ctx.strokeStyle = "red";
   ctx.lineWidth = 2;
   ctx.stroke();
   // x = y = 0;
 };
 
-const saveImage = imageData => {
+// 画背景图
+// const drawBgImage = imageData => {
+//   const imageUrl = getImageUrl(imageData);
+//   bgImg.src = imageUrl;
+// };
+
+// get 图片的url
+const getImageUrl = imageData => {
   let _canvas = document.createElement("canvas");
   _canvas.width = w;
   _canvas.height = h;
   let _ctx = _canvas.getContext("2d");
   _ctx.putImageData(imageData, 0, 0);
-  const imgUrl = _canvas.toDataURL();
-  console.log("save");
+  return _canvas.toDataURL();
+};
+
+const saveImage = imgUrl => {
+  console.log("save", imgUrl);
   ipcRenderer.send("save-image", imgUrl);
 };
 
 const { desktopCapturer } = require("electron");
-const getCaptureImage = () => {
-  console.log("getCaptureImage");
+const drawBgImage = () => {
   let { width, height } = remote.screen.getPrimaryDisplay().bounds;
   desktopCapturer
     .getSources({ types: ["window", "screen"] })
     .then(async sources => {
       for (const source of sources) {
-        console.log(source);
         if (source.name === "Entire Screen") {
           try {
             const stream = await navigator.mediaDevices.getUserMedia({
@@ -90,45 +113,62 @@ const getCaptureImage = () => {
             });
             handleStream(stream);
           } catch (e) {
-            handleError(e);
+            console.log(e);
           }
           return;
         }
       }
     });
 
-  function handleStream(stream) {
+  const handleStream = stream => {
     if (!stream) return;
 
     const video = document.createElement("video");
-    // const video = document.getElementById("video");
+    // document.body.removeChild(canvas);
 
-    video.height = document.body.offsetHeight;
-    video.width = document.body.offsetWidth;
-    // document.body.appendChild(video);
+    video.height = screenHeight;
+    video.width = screenWidth;
     video.onloadedmetadata = () => {
       stream.getTracks()[0];
       video.play();
       const _canvas = document.createElement("canvas");
-      _canvas.width = video.width;
-      _canvas.height = video.height;
+      _canvas.width = video.width * ratio;
+      _canvas.height = video.height * ratio;
+
       const _ctx = _canvas.getContext("2d");
-      // clear(_canvas);
       _ctx.drawImage(video, 0, 0);
 
-      const imageData = _ctx.getImageData(x, y, w, h);
-      // document.body.appendChild(_canvas);
-      saveImage(imageData);
+      // const _canvas1 = document.createElement("canvas");
+      // _canvas1.width = video.width;
+      // _canvas1.height = video.height;
+
+      // const _ctx1 = _canvas.getContext("2d");
+      // _ctx1.drawImage(video, 0, 0);
+
+      bgImg.src = _canvas.toDataURL();
+      screenImgData = _ctx.getImageData(0, 0, screenWidth, screenHeight);
+      console.log(screenWidth, screenWidth);
+      // screenImgData = _ctx1.getImageData(0, 0, screenWidth, screenHeight);
     };
 
-    // video.onloadedmetadata = e => video.play();
     video.srcObject = stream;
-    // ipcRenderer.send("close");
-  }
+  };
+};
 
-  function handleError(e) {
-    console.log(e);
-  }
+const getCaptureImage = () => {
+  const _canvas = document.createElement("canvas");
+  const _ctx = _canvas.getContext("2d");
+  _canvas.width = screenWidth;
+  _canvas.height = screenHeight;
+  _ctx.putImageData(screenImgData, 0, 0);
+
+  // document.body.appendChild(_canvas);
+
+  const imageData = _ctx.getImageData(x, y, w, h);
+
+  saveImage(getImageUrl(imageData));
+  // 完成后 关闭窗口
+  ipcRenderer.send("close-capture-win");
 };
 
 canvas.addEventListener("mousedown", onMousedown);
@@ -140,3 +180,7 @@ document
 // document
 //   .getElementById("getDesktopCapturer")
 //   .addEventListener("click", getDesktopCapturer);
+window.onload = () => {
+  console.log("ss");
+  drawBgImage();
+};

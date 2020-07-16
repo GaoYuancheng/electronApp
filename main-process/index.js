@@ -1,5 +1,6 @@
 const { app, BrowserWindow, ipcMain } = require("electron");
 const path = require("path");
+const { debug } = require("../utils");
 
 let mainWindow;
 
@@ -17,7 +18,6 @@ function createWindow() {
 
   // and load the index.html of the app.
   mainWindow.loadFile("./asserts/index.html");
-  const debug = /--debug/.test(process.argv[2]);
   if (debug) {
     mainWindow.webContents.openDevTools();
   }
@@ -40,8 +40,9 @@ app.on("window-all-closed", function() {
   if (process.platform !== "darwin") app.quit();
 });
 
-const { start } = require("./record");
+const { start, closeCaptureWin } = require("./record");
 const { saveImage } = require("./screen");
 
 ipcMain.on("start", start);
 ipcMain.on("save-image", saveImage);
+ipcMain.on("close-capture-win", closeCaptureWin);
