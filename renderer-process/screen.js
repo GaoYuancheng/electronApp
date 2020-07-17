@@ -1,20 +1,24 @@
 const { ipcRenderer, remote } = require("electron");
+let { width, height } = remote.screen.getPrimaryDisplay().bounds;
 
 let canvas = document.getElementById("canvas");
 let bgImg = document.getElementById("bgImg");
+bgImg.width = width;
+bgImg.height = height;
+// let bgImgDiv = document.getElementById("bgImgDiv");
 
 let screenWidth = document.body.offsetWidth;
 let screenHeight = document.body.offsetHeight;
+console.log(screenHeight, screenWidth);
 
-// bgImg.style.width = screenWidth;
-// bgImg.style.height = screenHeight;
+// document.body.style.maxHeight = height;
+// document.body.style.maxWidth = width;
 
-let screenImgUrl = "";
 let screenImgData = "";
 
 // const ratio = window.devicePixelRatio || 2;
 // 处理canvas 导出的图片模糊问题 TODO: 不是很懂
-const ratio = 1;
+const ratio = 2;
 
 canvas.width = screenWidth;
 canvas.height = screenHeight;
@@ -91,7 +95,6 @@ const saveImage = imgUrl => {
 
 const { desktopCapturer } = require("electron");
 const drawBgImage = () => {
-  let { width, height } = remote.screen.getPrimaryDisplay().bounds;
   desktopCapturer
     .getSources({ types: ["window", "screen"] })
     .then(async sources => {
@@ -128,30 +131,41 @@ const drawBgImage = () => {
 
     video.height = screenHeight;
     video.width = screenWidth;
+    // video.style.cssText = "position:absolute;top:-10000px;left:-10000px;";
+
+    let loaded = false;
     video.onloadedmetadata = () => {
-      stream.getTracks()[0];
+      if (loaded) return;
+      loaded = true;
       video.play();
+      stream.getTracks()[0];
+
       const _canvas = document.createElement("canvas");
       _canvas.width = video.width * ratio;
       _canvas.height = video.height * ratio;
+      // _canvas.width = video.width;
+      // _canvas.height = video.height;
+      // _canvas.style.width = video.width;
+      // _canvas.style.width = video.height;
 
       const _ctx = _canvas.getContext("2d");
-      _ctx.drawImage(video, 0, 0);
+      // _ctx.drawImage(video, 0, 0, _canvas.width, _canvas.height);
+      _ctx.drawImage(video, 0, 0, screenWidth, screenHeight);
+      ipcRenderer.send("console-log", { screenWidth, screenHeight });
 
-      // const _canvas1 = document.createElement("canvas");
-      // _canvas1.width = video.width;
-      // _canvas1.height = video.height;
-
-      // const _ctx1 = _canvas.getContext("2d");
-      // _ctx1.drawImage(video, 0, 0);
-
-      bgImg.src = _canvas.toDataURL();
+      bgImg.src = _canvas.toDataURL("image/png");
+      // bgImgDiv.style.backgroundImage = _canvas.toDataURL("image/png");
+      // console.log(screenWidth, screenWidth);
       screenImgData = _ctx.getImageData(0, 0, screenWidth, screenHeight);
-      console.log(screenWidth, screenWidth);
+
       // screenImgData = _ctx1.getImageData(0, 0, screenWidth, screenHeight);
+      // document.body.appendChild(_canvas);
+
+      ipcRenderer.send("console-log", "ok");
     };
 
     video.srcObject = stream;
+    // document.body.appendChild(video);
   };
 };
 
@@ -165,7 +179,8 @@ const getCaptureImage = () => {
   // document.body.appendChild(_canvas);
 
   const imageData = _ctx.getImageData(x, y, w, h);
-
+  console.log(x, y, w, h);
+  ipcRenderer.send("console-log", { x, y, w, h });
   saveImage(getImageUrl(imageData));
   // 完成后 关闭窗口
   ipcRenderer.send("close-capture-win");

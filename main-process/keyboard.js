@@ -1,4 +1,4 @@
-let { closeCaptureWin } = require("./record");
+let { closeCaptureWin } = require("./screen");
 const { globalShortcut } = require("electron");
 
 globalShortcut.register("Esc", () => {

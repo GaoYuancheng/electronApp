@@ -40,9 +40,12 @@ app.on("window-all-closed", function() {
   if (process.platform !== "darwin") app.quit();
 });
 
-const { start, closeCaptureWin } = require("./record");
-const { saveImage } = require("./screen");
+const { saveImage, closeCaptureWin, start } = require("./screen");
 
 ipcMain.on("start", start);
 ipcMain.on("save-image", saveImage);
 ipcMain.on("close-capture-win", closeCaptureWin);
+
+ipcMain.on("console-log", (e, arg) => {
+  console.log(arg);
+});
