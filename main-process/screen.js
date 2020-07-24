@@ -44,6 +44,7 @@ const start = () => {
     })
   );
   if (debug) {
+    // 打开调试
     captureWin.webContents.openDevTools();
   }
 
