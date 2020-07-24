@@ -3,6 +3,8 @@ let { width, height } = remote.screen.getPrimaryDisplay().bounds;
 
 let canvas = document.getElementById("canvas");
 let bgImg = document.getElementById("bgImg");
+let sizeInfo = document.getElementById("sizeInfo");
+
 bgImg.width = width;
 bgImg.height = height;
 // let bgImgDiv = document.getElementById("bgImgDiv");
@@ -18,7 +20,7 @@ let screenImgData = "";
 
 // const ratio = window.devicePixelRatio || 2;
 // 处理canvas 导出的图片模糊问题 TODO: 不是很懂
-const ratio = 2;
+const ratio = 1;
 
 canvas.width = screenWidth;
 canvas.height = screenHeight;
@@ -31,6 +33,19 @@ let x,
 
 // 开始移动
 let moveStart = false;
+
+const renderSize = () => {
+  sizeInfo.style.display = "block";
+  sizeInfo.innerText = `${w} * ${h}`;
+  if (y > 35) {
+    sizeInfo.style.top = `${y - 30}px`;
+    sizeInfo.style.left = `${x}px`;
+  } else {
+    sizeInfo.style.top = `${y + 5}px`;
+    sizeInfo.style.left = `${x + 5}px`;
+  }
+};
+
 const onMousedown = e => {
   const { offsetX, offsetY } = e;
   mouseHasDownInCanvas = true;
@@ -47,6 +62,7 @@ const onMouseMove = e => {
     w = offsetX - x;
     h = offsetY - y;
     drawRect(x, y, w, h);
+    renderSize();
   }
 };
 

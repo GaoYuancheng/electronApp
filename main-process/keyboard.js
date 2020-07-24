@@ -5,6 +5,6 @@ globalShortcut.register("Esc", () => {
   closeCaptureWin();
   console.log("press Esc");
 });
-globalShortcut.register("CommandOrControl+A", function() {
-  console.log("sss");
-});
+// globalShortcut.register("CommandOrControl+A", function() {
+//   console.log("sss");
+// });
