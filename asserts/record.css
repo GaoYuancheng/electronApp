@@ -1,14 +1,11 @@
 html,
-body,
-div {
+body{
   margin: 0;
+  height:100vh;
   padding: 0;
   /* background: #000; */
 }
-#bgImgDiv {
-  /* overflow: hidden; */
-  height: 100vh;
-}
+
 #canvas {
   background: transparent;
   position: absolute;
@@ -16,7 +13,7 @@ div {
   left: 0;
   z-index: 20;
 }
-#getCaptureImage {
+.operaArea {
   top: 100px;
   position: absolute;
   left: 100px;
@@ -27,14 +24,6 @@ div {
   position: absolute;
   left: 200px;
 } */
-
-#bgImg {
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 10;
-  height: 100vh;
-}
 
 #sizeInfo {
   position: absolute;

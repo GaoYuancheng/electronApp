@@ -46,7 +46,7 @@ const renderSize = () => {
   }
 };
 
-const onMousedown = e => {
+const onMousedown = (e) => {
   const { offsetX, offsetY } = e;
   mouseHasDownInCanvas = true;
   moveStart = true;
@@ -55,7 +55,7 @@ const onMousedown = e => {
   y = offsetY;
 };
 
-const onMouseMove = e => {
+const onMouseMove = (e) => {
   if (moveStart) {
     clear(canvas);
     const { offsetX, offsetY } = e;
@@ -74,7 +74,7 @@ const onMouseup = () => {
 };
 
 // 清除画布
-const clear = canvas => {
+const clear = (canvas) => {
   canvas.height += 1;
   canvas.height -= 1;
 };
@@ -95,7 +95,7 @@ const drawRect = (x, y, w, h) => {
 // };
 
 // get 图片的url
-const getImageUrl = imageData => {
+const getImageUrl = (imageData) => {
   let _canvas = document.createElement("canvas");
   _canvas.width = w;
   _canvas.height = h;
@@ -104,7 +104,7 @@ const getImageUrl = imageData => {
   return _canvas.toDataURL();
 };
 
-const saveImage = imgUrl => {
+const saveImage = (imgUrl) => {
   console.log("save", imgUrl);
   ipcRenderer.send("save-image", imgUrl);
 };
@@ -113,7 +113,7 @@ const { desktopCapturer } = require("electron");
 const drawBgImage = () => {
   desktopCapturer
     .getSources({ types: ["window", "screen"] })
-    .then(async sources => {
+    .then(async (sources) => {
       for (const source of sources) {
         if (source.name === "Entire Screen") {
           try {
@@ -126,9 +126,9 @@ const drawBgImage = () => {
                   minWidth: 0,
                   maxWidth: width,
                   minHeight: 0,
-                  maxHeight: height
-                }
-              }
+                  maxHeight: height,
+                },
+              },
             });
             handleStream(stream);
           } catch (e) {
@@ -139,7 +139,7 @@ const drawBgImage = () => {
       }
     });
 
-  const handleStream = stream => {
+  const handleStream = (stream) => {
     if (!stream) return;
 
     const video = document.createElement("video");

@@ -10,8 +10,8 @@ function createWindow() {
     height: 600,
     webPreferences: {
       preload: path.join(__dirname, "../preload.js"),
-      nodeIntegration: true
-    }
+      nodeIntegration: true,
+    },
     // frame: false,
     // titleBarStyle: 'customButtonsOnHover'
   });
@@ -31,20 +31,25 @@ app.whenReady().then(() => {
   // 快捷键注册
   require("./keyboard");
 
-  app.on("activate", function() {
+  app.on("activate", function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
 });
 
-app.on("window-all-closed", function() {
+app.on("window-all-closed", function () {
   if (process.platform !== "darwin") app.quit();
 });
 
-const { saveImage, closeCaptureWin, start } = require("./screen");
+const { saveImage, closeCaptureWin, captureStart } = require("./screen");
+const { saveRecord, closeRecordWin, recordStart } = require("./record");
 
-ipcMain.on("start", start);
 ipcMain.on("save-image", saveImage);
+ipcMain.on("capture-start", captureStart);
 ipcMain.on("close-capture-win", closeCaptureWin);
+
+ipcMain.on("save-record", saveRecord);
+ipcMain.on("record-start", recordStart);
+ipcMain.on("close-record-win", closeRecordWin);
 
 ipcMain.on("console-log", (e, arg) => {
   console.log(arg);

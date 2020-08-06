@@ -5,7 +5,7 @@ let captureWin = null;
 
 const os = require("os");
 
-const start = () => {
+const captureStart = () => {
   if (captureWin) {
     return;
   }
@@ -29,8 +29,8 @@ const start = () => {
     enableLargerThanScreen: true, // mac
     hasShadow: false,
     webPreferences: {
-      nodeIntegration: true
-    }
+      nodeIntegration: true,
+    },
   });
   captureWin.setAlwaysOnTop(true, "screen-saver"); // mac
   captureWin.setVisibleOnAllWorkspaces(true); // mac
@@ -40,7 +40,7 @@ const start = () => {
     require("url").format({
       pathname: require("path").join(__dirname, "../asserts/screen.html"),
       protocol: "file:",
-      slashes: true
+      slashes: true,
     })
   );
   if (debug) {
@@ -71,5 +71,5 @@ const saveImage = (e, imgUrl) => {
 module.exports = {
   saveImage,
   closeCaptureWin,
-  start
+  captureStart,
 };
