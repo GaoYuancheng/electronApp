@@ -1,4 +1,4 @@
-const { ipcRenderer, remote } = require("electron");
+const { ipcRenderer, remote, nativeImage, clipboard } = require("electron");
 let { width, height } = remote.screen.getPrimaryDisplay().bounds;
 
 let canvas = document.getElementById("canvas");
@@ -216,7 +216,7 @@ const drawBgImage = () => {
       screenImgData = _ctx.getImageData(0, 0, screenWidth, screenHeight);
 
       // screenImgData = _ctx1.getImageData(0, 0, screenWidth, screenHeight);
-      document.body.appendChild(_canvas);
+      // document.body.appendChild(_canvas);
 
       ipcRenderer.send("console-log", "ok");
     };
@@ -241,8 +241,13 @@ const getCaptureImage = () => {
   // document.body.appendChild(_canvas);
 
   const imageData = _ctx.getImageData(x, y, w, h);
-  console.log(x, y, w, h);
+
+  // 复制到剪切板
+  let image = nativeImage.createFromDataURL(getImageUrl(imageData));
+  clipboard.writeImage(image);
+
   ipcRenderer.send("console-log", { x, y, w, h });
+  // 保存图片到本地
   saveImage(getImageUrl(imageData));
   // 完成后 关闭窗口
   closeWin();
