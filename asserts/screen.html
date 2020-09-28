@@ -14,9 +14,24 @@
     </div>
     <canvas id="canvas"></canvas>
     <div id="sizeInfo"></div>
-    <button id="getCaptureImage">getCaptureImage</button>
+    <div id="tools">
+      <div id="toolsContent">
+        <!-- <button id="getCaptureImage">getCaptureImage</button> -->
+        <div class="iconArea" id="closeBtn">
+          <svg class="icon" aria-hidden="true">
+            <use xlink:href="#icon-baseline-close-px"></use>
+          </svg>
+        </div>
+        <div class="iconArea" id="okBtn">
+          <svg class="icon" aria-hidden="true">
+            <use xlink:href="#icon-ok"></use>
+          </svg>
+        </div>
+      </div>
+    </div>
     <!-- <button id="getDesktopCapturer">getDesktopCapturer</button> -->
     <!-- <video id="video"></video> -->
     <script src="../renderer-process/screen.js"></script>
+    <script src="./iconfont.js"></script>
   </body>
 </html>

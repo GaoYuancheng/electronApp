@@ -10,11 +10,27 @@
   <body>
     <canvas id="canvas"></canvas>
     <div id="sizeInfo"></div>
-    <div class="operaArea">
-      <button id="recordStart">record-start</button>
-      <button id="recordEnd">record-end</button>
-    </div>
+    <div id="tools">
+      <div id="toolsContent">
+        <!-- <button id="getCaptureImage">getCaptureImage</button> -->
+        <div class="iconArea" id="closeBtn">
+          <svg class="icon" aria-hidden="true">
+            <use xlink:href="#icon-baseline-close-px"></use>
+          </svg>
+        </div>
+        <div class="iconArea" id="stopBtn">
+          <svg class="icon" aria-hidden="true">
+            <use xlink:href="#icon-stop"></use>
+          </svg>
+        </div>
+        <div class="iconArea" id="startBtn">
+          <svg class="icon" aria-hidden="true">
+            <use xlink:href="#icon-ok"></use>
+          </svg>
+        </div>
+      </div>
 
     <script src="../renderer-process/record.js"></script>
+    <script src="./iconfont.js"></script>
   </body>
 </html>

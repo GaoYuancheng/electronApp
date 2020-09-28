@@ -1,8 +1,12 @@
-const { ipcRenderer, remote } = require("electron");
+const { remote, ipcRenderer } = require("electron");
 let { width, height } = remote.screen.getPrimaryDisplay().bounds;
 
 let canvas = document.getElementById("canvas");
 let sizeInfo = document.getElementById("sizeInfo");
+let tools = document.getElementById("tools");
+let closeBtn = document.getElementById("closeBtn");
+let stopBtn = document.getElementById("stopBtn");
+let startBtn = document.getElementById("startBtn");
 
 let screenWidth = document.body.offsetWidth;
 let screenHeight = document.body.offsetHeight;
@@ -26,6 +30,15 @@ let timer;
 // 开始移动
 let moveStart = false;
 
+// 渲染 tools 工具栏
+const renderTools = () => {
+  tools.style.display = "block";
+  tools.style.top = `${y + h + 15}px`;
+  tools.style.left = `${x}px`;
+  tools.style.width = `${w + 20}px`;
+};
+
+// 渲染 size 信息
 const renderSize = () => {
   sizeInfo.style.display = "block";
   sizeInfo.innerText = `${w} * ${h}`;
@@ -62,6 +75,7 @@ const onMouseup = () => {
   if (mouseHasDownInCanvas && moveStart) {
     mouseHasDownInCanvas = false;
     moveStart = false;
+    renderTools();
   }
 };
 
@@ -84,6 +98,10 @@ const getScreenRecord = () => {
   desktopCapturer
     .getSources({ types: ["window", "screen"] })
     .then(async (sources) => {
+      // 切换 录制/停止 图标
+      startBtn.style.display = "none";
+      stopBtn.style.display = "flex";
+
       for (const source of sources) {
         if (source.name === "Entire Screen") {
           try {
@@ -130,6 +148,7 @@ const getScreenRecord = () => {
       //   this.arean.height,
       // )
       ctx.drawImage(imageBitmap, x, y, w, h, 0, 0, w, h);
+      console.log(x, y, w, h);
       timer = setTimeout(function () {
         handleImage(ctx, imageCapture);
       }, 0);
@@ -140,6 +159,8 @@ const getScreenRecord = () => {
     if (!stream) return;
 
     const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
     const ctx = canvas.getContext("2d");
     tracks = stream.getTracks();
 
@@ -154,17 +175,21 @@ const getScreenRecord = () => {
       mimeType: "video/webm",
     };
     const canvasStream = canvas.captureStream(100);
-    const canvasVideoTrack = canvasStream.getVideoTracks()[0];
+    // const canvasVideoTrack = canvasStream.getVideoTracks()[0];
 
-    const mediaStream = new MediaStream([canvasVideoTrack]);
-    // mediaStream.addTrack(screenAudioTrack);
-    recorder = new MediaRecorder(mediaStream, options);
+    // const mediaStream = new MediaStream([canvasVideoTrack]);
+    // recorder = new MediaRecorder(mediaStream, options);
+    recorder = new MediaRecorder(canvasStream, options);
     blobs = [];
     recorder.ondataavailable = function (event) {
       blobs.push(event.data);
     };
     recorder.start();
   };
+};
+
+const closeWin = () => {
+  ipcRenderer.send("close-record-win");
 };
 
 const savaRecord = () => {
@@ -191,6 +216,10 @@ const savaRecord = () => {
   // const wembPath = path.join(__dirname, "../screen-captures/record.webm");
   const mp4Path = path.join(__dirname, "../screen-captures/record.webm");
 
+  // 切换 录制/停止 图标
+  startBtn.style.display = "flex";
+  stopBtn.style.display = "none";
+
   toArrayBuffer(new Blob(blobs, { type: "video/webm" }), (chunk) => {
     const buffer = toBuffer(chunk);
     fs.writeFile(mp4Path, buffer, function (err) {
@@ -213,10 +242,9 @@ const stopRecord = () => {
 canvas.addEventListener("mousedown", onMousedown);
 canvas.addEventListener("mouseup", onMouseup);
 canvas.addEventListener("mousemove", onMouseMove);
-document
-  .getElementById("recordStart")
-  .addEventListener("click", getScreenRecord);
-document.getElementById("recordEnd").addEventListener("click", stopRecord);
+startBtn.addEventListener("click", getScreenRecord);
+closeBtn.addEventListener("click", closeWin);
+stopBtn.addEventListener("click", stopRecord);
 // document
 //   .getElementById("getDesktopCapturer")
 //   .addEventListener("click", getDesktopCapturer);

@@ -16,17 +16,39 @@ div {
   left: 0;
   z-index: 20;
 }
-#getCaptureImage {
-  top: 100px;
+#tools {
   position: absolute;
-  left: 100px;
   z-index: 30;
+  display: none;
+}
+
+#toolsContent {
+  display: flex;
+  justify-content: flex-end;
 }
 /* #getDesktopCapturer {
   top: 100px;
   position: absolute;
   left: 200px;
 } */
+.iconArea {
+  width: 32px;
+  height: 32px;
+  background: rgba(0, 0, 0.45);
+  color: #ddd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.icon {
+  width: 24px;
+  height: 24px;
+  vertical-align: -0.15em;
+  fill: currentColor;
+  overflow: hidden;
+
+  cursor: pointer;
+}
 
 #bgImg {
   position: absolute;

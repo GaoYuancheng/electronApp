@@ -19,20 +19,20 @@ const captureStart = () => {
     // width,
     // height,
     x: 0,
-    y: 0,
-    transparent: true,
-    frame: false,
-    skipTaskbar: true,
-    autoHideMenuBar: true,
-    movable: false,
-    resizable: false,
+    y: debug ? 30 : 0,
+    transparent: !debug,
+    frame: debug,
+    skipTaskbar: !debug,
+    autoHideMenuBar: !debug,
+    movable: debug,
+    resizable: debug,
     enableLargerThanScreen: true, // mac
     hasShadow: false,
     webPreferences: {
       nodeIntegration: true,
     },
   });
-  captureWin.setAlwaysOnTop(true, "screen-saver"); // mac
+  // captureWin.setAlwaysOnTop(true, "screen-saver"); // mac
   captureWin.setVisibleOnAllWorkspaces(true); // mac
   captureWin.setFullScreenable(false); // mac
 

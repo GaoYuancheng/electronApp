@@ -1,12 +1,8 @@
-const fs = require("fs");
-const path = require("path");
 const { BrowserWindow, screen } = require("electron");
 const { debug } = require("../utils");
 let recordWin = null;
 
 const os = require("os");
-
-const ffmpegPath = path.join(__dirname, "../utils", "ffmpeg.exe");
 
 const recordStart = () => {
   if (recordWin) {
@@ -22,13 +18,13 @@ const recordStart = () => {
     // width,
     // height,
     x: 0,
-    y: 0,
-    transparent: true,
-    frame: false,
-    skipTaskbar: true,
-    autoHideMenuBar: true,
-    movable: false,
-    resizable: false,
+    y: debug ? 30 : 0,
+    transparent: !debug,
+    frame: debug,
+    skipTaskbar: !debug,
+    autoHideMenuBar: !debug,
+    movable: debug,
+    resizable: debug,
     enableLargerThanScreen: true, // mac
     hasShadow: false,
     webPreferences: {

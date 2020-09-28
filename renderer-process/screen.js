@@ -4,6 +4,7 @@ let { width, height } = remote.screen.getPrimaryDisplay().bounds;
 let canvas = document.getElementById("canvas");
 let bgImg = document.getElementById("bgImg");
 let sizeInfo = document.getElementById("sizeInfo");
+let tools = document.getElementById("tools");
 
 bgImg.width = width;
 bgImg.height = height;
@@ -20,7 +21,7 @@ let screenImgData = "";
 
 // const ratio = window.devicePixelRatio || 2;
 // 处理canvas 导出的图片模糊问题 TODO: 不是很懂
-const ratio = 1;
+// const ratio = 1;
 
 canvas.width = screenWidth;
 canvas.height = screenHeight;
@@ -34,6 +35,27 @@ let x,
 // 开始移动
 let moveStart = false;
 
+const getPixelRatio = (context) => {
+  var backingStore =
+    context.backingStorePixelRatio ||
+    context.webkitBackingStorePixelRatio ||
+    context.mozBackingStorePixelRatio ||
+    context.msBackingStorePixelRatio ||
+    context.oBackingStorePixelRatio ||
+    context.backingStorePixelRatio ||
+    1;
+  return (window.devicePixelRatio || 1) / backingStore;
+};
+
+// 渲染 tools 工具栏
+const renderTools = () => {
+  tools.style.display = "block";
+  tools.style.top = `${y + h + 15}px`;
+  tools.style.left = `${x}px`;
+  tools.style.width = `${w + 20}px`;
+};
+
+// 渲染 size 信息
 const renderSize = () => {
   sizeInfo.style.display = "block";
   sizeInfo.innerText = `${w} * ${h}`;
@@ -70,6 +92,7 @@ const onMouseup = () => {
   if (mouseHasDownInCanvas && moveStart) {
     mouseHasDownInCanvas = false;
     moveStart = false;
+    renderTools();
   }
 };
 
@@ -112,7 +135,10 @@ const saveImage = (imgUrl) => {
 const { desktopCapturer } = require("electron");
 const drawBgImage = () => {
   desktopCapturer
-    .getSources({ types: ["window", "screen"] })
+    .getSources({
+      types: ["screen"],
+      // thumbnailSize: { width: 1, height: 1 },
+    })
     .then(async (sources) => {
       for (const source of sources) {
         if (source.name === "Entire Screen") {
@@ -134,6 +160,7 @@ const drawBgImage = () => {
           } catch (e) {
             console.log(e);
           }
+
           return;
         }
       }
@@ -147,6 +174,8 @@ const drawBgImage = () => {
 
     video.height = screenHeight;
     video.width = screenWidth;
+    // video.style.width = `${screenWidth}px`;
+    // video.style.height = `${screenHeight}px`;
     // video.style.cssText = "position:absolute;top:-10000px;left:-10000px;";
 
     let loaded = false;
@@ -157,34 +186,51 @@ const drawBgImage = () => {
       stream.getTracks()[0];
 
       const _canvas = document.createElement("canvas");
-      _canvas.width = video.width * ratio;
-      _canvas.height = video.height * ratio;
-      // _canvas.width = video.width;
-      // _canvas.height = video.height;
-      // _canvas.style.width = video.width;
-      // _canvas.style.width = video.height;
 
       const _ctx = _canvas.getContext("2d");
-      // _ctx.drawImage(video, 0, 0, _canvas.width, _canvas.height);
-      _ctx.drawImage(video, 0, 0, screenWidth, screenHeight);
-      ipcRenderer.send("console-log", { screenWidth, screenHeight });
 
-      bgImg.src = _canvas.toDataURL("image/png");
+      const ratio = getPixelRatio(_ctx);
+
+      // _canvas.width = video.width * ratio;
+      // _canvas.height = video.height * ratio;
+      _canvas.width = video.width;
+      _canvas.height = video.height;
+      _canvas.style.width = `${video.width}px`;
+      _canvas.style.height = `${video.height}px`;
+      // console.log(video.width, video.height);
+
+      // _ctx.drawImage(video, 0, 0, _canvas.width, _canvas.height);
+      // _ctx.scale(ratio, ratio);
+      _ctx.drawImage(video, 0, 0, screenWidth, screenHeight);
+
+      ipcRenderer.send("console-log", {
+        screenWidth,
+        screenHeight,
+        ratio,
+        width,
+      });
+
+      bgImg.src = _canvas.toDataURL("image/png", 1);
       // bgImgDiv.style.backgroundImage = _canvas.toDataURL("image/png");
       // console.log(screenWidth, screenWidth);
       screenImgData = _ctx.getImageData(0, 0, screenWidth, screenHeight);
 
       // screenImgData = _ctx1.getImageData(0, 0, screenWidth, screenHeight);
-      // document.body.appendChild(_canvas);
+      document.body.appendChild(_canvas);
 
       ipcRenderer.send("console-log", "ok");
     };
 
     video.srcObject = stream;
-    // document.body.appendChild(video);
   };
 };
 
+// 关闭窗口
+const closeWin = () => {
+  ipcRenderer.send("close-capture-win");
+};
+
+// 截图 保存文件
 const getCaptureImage = () => {
   const _canvas = document.createElement("canvas");
   const _ctx = _canvas.getContext("2d");
@@ -199,18 +245,14 @@ const getCaptureImage = () => {
   ipcRenderer.send("console-log", { x, y, w, h });
   saveImage(getImageUrl(imageData));
   // 完成后 关闭窗口
-  ipcRenderer.send("close-capture-win");
+  closeWin();
 };
 
 canvas.addEventListener("mousedown", onMousedown);
 canvas.addEventListener("mouseup", onMouseup);
 canvas.addEventListener("mousemove", onMouseMove);
-document
-  .getElementById("getCaptureImage")
-  .addEventListener("click", getCaptureImage);
-// document
-//   .getElementById("getDesktopCapturer")
-//   .addEventListener("click", getDesktopCapturer);
+document.getElementById("okBtn").addEventListener("click", getCaptureImage);
+document.getElementById("closeBtn").addEventListener("click", closeWin);
 window.onload = () => {
   console.log("ss");
   drawBgImage();
