@@ -1,3 +1,5 @@
+// 相对于 html 文件
+const { initCanvas } = require("../renderer-process/canvas.js");
 const { remote, ipcRenderer } = require("electron");
 let { width, height } = remote.screen.getPrimaryDisplay().bounds;
 
@@ -12,86 +14,28 @@ let screenWidth = document.body.offsetWidth;
 let screenHeight = document.body.offsetHeight;
 console.log(screenHeight, screenWidth);
 
-canvas.width = screenWidth;
-canvas.height = screenHeight;
-let ctx = canvas.getContext("2d");
-let mouseHasDownInCanvas = false;
-let x,
-  y,
-  w,
+// 矩形尺寸
+let x = 0,
+  y = 0,
+  w = 0,
   h = 0;
-let no = 1;
+
+const setxywh = (x1, y1, w1, h1) => {
+  x = x1;
+  y = y1;
+  w = w1;
+  h = h1;
+};
+
 // 视屏数据
 let blobs = [];
 let tracks;
 let recorder;
 let timer;
+let no = 1;
 
-// 开始移动
-let moveStart = false;
-
-// 渲染 tools 工具栏
-const renderTools = () => {
-  tools.style.display = "block";
-  tools.style.top = `${y + h + 15}px`;
-  tools.style.left = `${x}px`;
-  tools.style.width = `${w + 20}px`;
-};
-
-// 渲染 size 信息
-const renderSize = () => {
-  sizeInfo.style.display = "block";
-  sizeInfo.innerText = `${w} * ${h}`;
-  if (y > 35) {
-    sizeInfo.style.top = `${y - 30}px`;
-    sizeInfo.style.left = `${x}px`;
-  } else {
-    sizeInfo.style.top = `${y + 5}px`;
-    sizeInfo.style.left = `${x + 5}px`;
-  }
-};
-
-const onMousedown = (e) => {
-  const { offsetX, offsetY } = e;
-  mouseHasDownInCanvas = true;
-  moveStart = true;
-  // console.log(offsetX, offsetY);
-  x = offsetX;
-  y = offsetY;
-};
-
-const onMouseMove = (e) => {
-  if (moveStart) {
-    clear(canvas);
-    const { offsetX, offsetY } = e;
-    w = offsetX - x;
-    h = offsetY - y;
-    drawRect(x, y, w, h);
-    renderSize();
-  }
-};
-
-const onMouseup = () => {
-  if (mouseHasDownInCanvas && moveStart) {
-    mouseHasDownInCanvas = false;
-    moveStart = false;
-    renderTools();
-  }
-};
-
-// 清除画布
-const clear = (canvas) => {
-  canvas.height += 1;
-  canvas.height -= 1;
-};
-
-const drawRect = (x, y, w, h) => {
-  // console.log(x, y, w, h);
-  ctx.rect(x, y, w, h);
-  ctx.strokeStyle = "red";
-  ctx.lineWidth = 2;
-  ctx.stroke();
-};
+// 初始化canvas 以及工具栏
+initCanvas(canvas, sizeInfo, tools, setxywh);
 
 const { desktopCapturer } = require("electron");
 const getScreenRecord = () => {
@@ -239,9 +183,6 @@ const stopRecord = () => {
   tracks.forEach((track) => track.stop());
 };
 
-canvas.addEventListener("mousedown", onMousedown);
-canvas.addEventListener("mouseup", onMouseup);
-canvas.addEventListener("mousemove", onMouseMove);
 startBtn.addEventListener("click", getScreenRecord);
 closeBtn.addEventListener("click", closeWin);
 stopBtn.addEventListener("click", stopRecord);

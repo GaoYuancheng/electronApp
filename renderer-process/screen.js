@@ -1,31 +1,22 @@
+const { initCanvas } = require("../renderer-process/canvas.js");
 const { ipcRenderer, remote, nativeImage, clipboard } = require("electron");
 let { width, height } = remote.screen.getPrimaryDisplay().bounds;
 
 let canvas = document.getElementById("canvas");
-let bgImg = document.getElementById("bgImg");
 let sizeInfo = document.getElementById("sizeInfo");
 let tools = document.getElementById("tools");
+let bgImg = document.getElementById("bgImg");
+let screenWidth = document.body.offsetWidth;
+let screenHeight = document.body.offsetHeight;
 
 bgImg.width = width;
 bgImg.height = height;
 // let bgImgDiv = document.getElementById("bgImgDiv");
 
-let screenWidth = document.body.offsetWidth;
-let screenHeight = document.body.offsetHeight;
-console.log(screenHeight, screenWidth);
-
 // document.body.style.maxHeight = height;
 // document.body.style.maxWidth = width;
 
 let screenImgData = "";
-
-// const ratio = window.devicePixelRatio || 2;
-// 处理canvas 导出的图片模糊问题 TODO: 不是很懂
-// const ratio = 1;
-
-canvas.width = screenWidth;
-canvas.height = screenHeight;
-let ctx = canvas.getContext("2d");
 
 // 矩形尺寸
 let x = 0,
@@ -33,127 +24,27 @@ let x = 0,
   w = 0,
   h = 0;
 
-// mouseDown的点
-let mouseDownX = 0,
-  mouseDownY = 0;
-// 鼠标移动的终点
-let moveEndX = 0,
-  moveEndY = 0;
-// 是否在 已绘制的矩形上点击
-let mouseHasDownInRect = false;
-// 开始花矩形
-let drawStart = false;
-// 鼠标是否在点击后移动过
-let mouseHasMoved = false;
-
-const getPixelRatio = (context) => {
-  var backingStore =
-    context.backingStorePixelRatio ||
-    context.webkitBackingStorePixelRatio ||
-    context.mozBackingStorePixelRatio ||
-    context.msBackingStorePixelRatio ||
-    context.oBackingStorePixelRatio ||
-    context.backingStorePixelRatio ||
-    1;
-  return (window.devicePixelRatio || 1) / backingStore;
+const setxywh = (x1, y1, w1, h1) => {
+  x = x1;
+  y = y1;
+  w = w1;
+  h = h1;
 };
 
-// 渲染下方 tools 工具栏
-const renderTools = (x, y, w, h) => {
-  tools.style.display = "block";
-  tools.style.top = `${y + h + 15}px`;
-  tools.style.left = `${x}px`;
-  tools.style.width = `${w + 20}px`;
-};
+// 初始化canvas 以及工具栏
+initCanvas(canvas, sizeInfo, tools, setxywh);
 
-// 隐藏下方工具栏
-const hideTools = () => {
-  tools.style.display = "none";
-};
-
-// 渲染左上角 size 信息
-const renderSize = (x, y, w, h) => {
-  sizeInfo.style.display = "block";
-  sizeInfo.innerText = `${w} * ${h}`;
-  if (y > 35) {
-    sizeInfo.style.top = `${y - 30}px`;
-    sizeInfo.style.left = `${x}px`;
-  } else {
-    sizeInfo.style.top = `${y + 5}px`;
-    sizeInfo.style.left = `${x + 5}px`;
-  }
-};
-
-const onMousedown = (e) => {
-  hideTools();
-  const { offsetX, offsetY } = e;
-  // 判断是否在已绘制的矩形中
-  if (offsetX > x && offsetY > y && offsetX < x + w && offsetY < y + h) {
-    mouseHasDownInRect = true;
-    mouseDownX = offsetX;
-    mouseDownY = offsetY;
-  } else {
-    x = offsetX;
-    y = offsetY;
-  }
-  drawStart = true;
-  console.log();
-  // console.log(offsetX, offsetY);
-};
-
-const onMouseMove = (e) => {
-  if (drawStart) {
-    mouseHasMoved = true;
-    clear(canvas);
-    const { offsetX, offsetY } = e;
-
-    if (mouseHasDownInRect) {
-      // 里面不可以直接改变x，y 的值
-      moveEndX = x + offsetX - mouseDownX;
-      moveEndY = y + offsetY - mouseDownY;
-      drawRect(moveEndX, moveEndY, w, h);
-      renderSize(moveEndX, moveEndY, w, h);
-    } else {
-      w = offsetX - x;
-      h = offsetY - y;
-      drawRect(x, y, w, h);
-      renderSize(x, y, w, h);
-    }
-    console.log(x, y, w, h, mouseDownX, offsetX);
-  } else {
-    mouseHasMoved = false;
-  }
-};
-
-const onMouseup = () => {
-  // 如果是在矩形中
-  if (mouseHasDownInRect) {
-    x = moveEndX;
-    y = moveEndY;
-  }
-
-  if (drawStart && mouseHasMoved) {
-    renderTools(x, y, w, h);
-  }
-  mouseHasMoved = false;
-  drawStart = false;
-  mouseHasDownInRect = false;
-};
-
-// 清除画布
-const clear = (canvas) => {
-  canvas.height += 1;
-  canvas.height -= 1;
-};
-
-const drawRect = (x, y, w, h) => {
-  // console.log(x, y, w, h);
-  ctx.rect(x, y, w, h);
-  ctx.strokeStyle = "red";
-  ctx.lineWidth = 2;
-  ctx.stroke();
-  // x = y = 0;
-};
+// const getPixelRatio = (context) => {
+//   var backingStore =
+//     context.backingStorePixelRatio ||
+//     context.webkitBackingStorePixelRatio ||
+//     context.mozBackingStorePixelRatio ||
+//     context.msBackingStorePixelRatio ||
+//     context.oBackingStorePixelRatio ||
+//     context.backingStorePixelRatio ||
+//     1;
+//   return (window.devicePixelRatio || 1) / backingStore;
+// };
 
 // get 图片的url
 const getImageUrl = (imageData) => {
@@ -208,13 +99,9 @@ const drawBgImage = () => {
     if (!stream) return;
 
     const video = document.createElement("video");
-    // document.body.removeChild(canvas);
 
     video.height = screenHeight;
     video.width = screenWidth;
-    // video.style.width = `${screenWidth}px`;
-    // video.style.height = `${screenHeight}px`;
-    // video.style.cssText = "position:absolute;top:-10000px;left:-10000px;";
 
     let loaded = false;
     video.onloadedmetadata = () => {
@@ -227,7 +114,7 @@ const drawBgImage = () => {
 
       const _ctx = _canvas.getContext("2d");
 
-      const ratio = getPixelRatio(_ctx);
+      // const ratio = getPixelRatio(_ctx);
 
       // _canvas.width = video.width * ratio;
       // _canvas.height = video.height * ratio;
@@ -237,23 +124,20 @@ const drawBgImage = () => {
       _canvas.style.height = `${video.height}px`;
       // console.log(video.width, video.height);
 
-      // _ctx.drawImage(video, 0, 0, _canvas.width, _canvas.height);
       // _ctx.scale(ratio, ratio);
       _ctx.drawImage(video, 0, 0, screenWidth, screenHeight);
 
       ipcRenderer.send("console-log", {
         screenWidth,
         screenHeight,
-        ratio,
+        // ratio,
         width,
       });
 
       bgImg.src = _canvas.toDataURL("image/png", 1);
-      // bgImgDiv.style.backgroundImage = _canvas.toDataURL("image/png");
       // console.log(screenWidth, screenWidth);
       screenImgData = _ctx.getImageData(0, 0, screenWidth, screenHeight);
 
-      // screenImgData = _ctx1.getImageData(0, 0, screenWidth, screenHeight);
       // document.body.appendChild(_canvas);
 
       ipcRenderer.send("console-log", "ok");
@@ -291,9 +175,6 @@ const getCaptureImage = () => {
   closeWin();
 };
 
-canvas.addEventListener("mousedown", onMousedown);
-canvas.addEventListener("mouseup", onMouseup);
-canvas.addEventListener("mousemove", onMouseMove);
 document.getElementById("okBtn").addEventListener("click", getCaptureImage);
 document.getElementById("closeBtn").addEventListener("click", closeWin);
 window.onload = () => {
