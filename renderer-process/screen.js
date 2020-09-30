@@ -26,14 +26,25 @@ let screenImgData = "";
 canvas.width = screenWidth;
 canvas.height = screenHeight;
 let ctx = canvas.getContext("2d");
-let mouseHasDownInCanvas = false;
-let x,
-  y,
-  w,
+
+// 矩形尺寸
+let x = 0,
+  y = 0,
+  w = 0,
   h = 0;
 
-// 开始移动
-let moveStart = false;
+// mouseDown的点
+let mouseDownX = 0,
+  mouseDownY = 0;
+// 鼠标移动的终点
+let moveEndX = 0,
+  moveEndY = 0;
+// 是否在 已绘制的矩形上点击
+let mouseHasDownInRect = false;
+// 开始花矩形
+let drawStart = false;
+// 鼠标是否在点击后移动过
+let mouseHasMoved = false;
 
 const getPixelRatio = (context) => {
   var backingStore =
@@ -47,16 +58,21 @@ const getPixelRatio = (context) => {
   return (window.devicePixelRatio || 1) / backingStore;
 };
 
-// 渲染 tools 工具栏
-const renderTools = () => {
+// 渲染下方 tools 工具栏
+const renderTools = (x, y, w, h) => {
   tools.style.display = "block";
   tools.style.top = `${y + h + 15}px`;
   tools.style.left = `${x}px`;
   tools.style.width = `${w + 20}px`;
 };
 
-// 渲染 size 信息
-const renderSize = () => {
+// 隐藏下方工具栏
+const hideTools = () => {
+  tools.style.display = "none";
+};
+
+// 渲染左上角 size 信息
+const renderSize = (x, y, w, h) => {
   sizeInfo.style.display = "block";
   sizeInfo.innerText = `${w} * ${h}`;
   if (y > 35) {
@@ -69,31 +85,59 @@ const renderSize = () => {
 };
 
 const onMousedown = (e) => {
+  hideTools();
   const { offsetX, offsetY } = e;
-  mouseHasDownInCanvas = true;
-  moveStart = true;
+  // 判断是否在已绘制的矩形中
+  if (offsetX > x && offsetY > y && offsetX < x + w && offsetY < y + h) {
+    mouseHasDownInRect = true;
+    mouseDownX = offsetX;
+    mouseDownY = offsetY;
+  } else {
+    x = offsetX;
+    y = offsetY;
+  }
+  drawStart = true;
+  console.log();
   // console.log(offsetX, offsetY);
-  x = offsetX;
-  y = offsetY;
 };
 
 const onMouseMove = (e) => {
-  if (moveStart) {
+  if (drawStart) {
+    mouseHasMoved = true;
     clear(canvas);
     const { offsetX, offsetY } = e;
-    w = offsetX - x;
-    h = offsetY - y;
-    drawRect(x, y, w, h);
-    renderSize();
+
+    if (mouseHasDownInRect) {
+      // 里面不可以直接改变x，y 的值
+      moveEndX = x + offsetX - mouseDownX;
+      moveEndY = y + offsetY - mouseDownY;
+      drawRect(moveEndX, moveEndY, w, h);
+      renderSize(moveEndX, moveEndY, w, h);
+    } else {
+      w = offsetX - x;
+      h = offsetY - y;
+      drawRect(x, y, w, h);
+      renderSize(x, y, w, h);
+    }
+    console.log(x, y, w, h, mouseDownX, offsetX);
+  } else {
+    mouseHasMoved = false;
   }
 };
 
 const onMouseup = () => {
-  if (mouseHasDownInCanvas && moveStart) {
-    mouseHasDownInCanvas = false;
-    moveStart = false;
-    renderTools();
+  // 如果是在矩形中
+  if (mouseHasDownInRect) {
+    x = moveEndX;
+    y = moveEndY;
   }
+
+  if (drawStart && mouseHasMoved) {
+    renderTools(x, y, w, h);
+  }
+  mouseHasMoved = false;
+  drawStart = false;
+  mouseHasDownInRect = false;
 };
 
 // 清除画布
@@ -110,12 +154,6 @@ const drawRect = (x, y, w, h) => {
   ctx.stroke();
   // x = y = 0;
 };
-
-// 画背景图
-// const drawBgImage = imageData => {
-//   const imageUrl = getImageUrl(imageData);
-//   bgImg.src = imageUrl;
-// };
 
 // get 图片的url
 const getImageUrl = (imageData) => {
