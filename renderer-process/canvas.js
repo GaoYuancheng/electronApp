@@ -81,7 +81,7 @@ const initCanvas = (canvas, sizeInfo, tools, setxywh) => {
       const { offsetX, offsetY } = e;
 
       if (mouseHasDownInRect) {
-        // 里面不可以直接改变x，y 的值
+        // 拖拽选框 里面不可以直接改变x，y 的值
         moveEndX = x + offsetX - mouseDownX;
         moveEndY = y + offsetY - mouseDownY;
         drawRect(moveEndX, moveEndY, w, h);
@@ -99,7 +99,7 @@ const initCanvas = (canvas, sizeInfo, tools, setxywh) => {
   };
 
   const onMouseup = () => {
-    // 如果是在矩形中
+    // 如果是在矩形中 刚刚拖拽完
     if (mouseHasDownInRect) {
       x = moveEndX;
       y = moveEndY;
