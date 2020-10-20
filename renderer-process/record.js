@@ -45,6 +45,7 @@ const getScreenRecord = () => {
       // 切换 录制/停止 图标
       startBtn.style.display = "none";
       stopBtn.style.display = "flex";
+      canvas.style.pointerEvents = "none";
 
       for (const source of sources) {
         if (source.name === "Entire Screen") {
